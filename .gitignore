@@ -1,0 +1,55 @@
+# 构建输出目录
+bin/
+obj/
+output/
+
+# Visual Studio 文件
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# 编译结果
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# NuGet 包
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# MSTest 测试结果
+TestResults/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# 临时文件
+*~
+*.swp
+*.tmp
+*.log
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# 其他
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>简单模板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: white;
+            color: black;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0.5;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title != null ? title : "无标题文档" }}</h1>
+    
+    <div class="content">
+        {{ content }}
+    </div>
+    
+    <div class="watermark">
+        {{ watermark_text }}
+    </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Md2Image</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Md2Image Contributors</Authors>
+    <Company>Md2Image</Company>
+    <Description>一个.NET工具库，用于将Markdown文件渲染为图片，支持自定义模板，方便在各种场景下使用，特别适合微信公众号等不支持直接粘贴富文本的平台。</Description>
+    <PackageTags>markdown;image;converter;wechat</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.30.4" />
+    <PackageReference Include="Scriban" Version="5.5.2" />
+    <PackageReference Include="SkiaSharp" Version="2.88.3" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\templates\**\*" />
+  </ItemGroup>
+
+</Project>
