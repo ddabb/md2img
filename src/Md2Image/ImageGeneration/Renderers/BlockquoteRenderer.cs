@@ -41,36 +41,62 @@ namespace Md2Image.ImageGeneration.Renderers
             {
                 Color = SKColors.Gray,
                 TextSize = FontSize,
-                IsAntialias = true
+                IsAntialias = true,
+                Typeface = SKTypeface.FromFamilyName(FontFamily)
             })
             {
-                // 简化的文本换行绘制
-                var words = text.Split(' ');
-                var currentLine = new StringBuilder();
+                // 处理中文和英文混合文本
+                var lines = text.Split('\n');
                 float lineY = y + FontSize + 5;
                 
-                foreach (var word in words)
+                foreach (var line in lines)
                 {
-                    var testLine = currentLine.Length == 0 ? word : currentLine + " " + word;
-                    var lineWidth = paint.MeasureText(testLine);
-                    
-                    if (lineWidth <= width - _leftIndent)
+                    if (string.IsNullOrEmpty(line))
                     {
-                        currentLine.Append(currentLine.Length == 0 ? word : " " + word);
+                        lineY += FontSize * LineHeight;
+                        continue;
+                    }
+                    
+                    // 处理长行
+                    if (paint.MeasureText(line) <= width - _leftIndent)
+                    {
+                        canvas.DrawText(line, x + _leftIndent, lineY, paint);
+                        lineY += FontSize * LineHeight;
                     }
                     else
                     {
-                        canvas.DrawText(currentLine.ToString(), x + _leftIndent, lineY, paint);
-                        lineY += FontSize * LineHeight;
-                        currentLine.Clear();
-                        currentLine.Append(word);
+                        // 需要换行的情况
+                        int startIndex = 0;
+                        int currentIndex = 0;
+                        float currentWidth = 0;
+                        
+                        while (currentIndex < line.Length)
+                        {
+                            char c = line[currentIndex];
+                            float charWidth = paint.MeasureText(c.ToString());
+                            
+                            if (currentWidth + charWidth > width - _leftIndent)
+                            {
+                                // 需要换行
+                                string segment = line.Substring(startIndex, currentIndex - startIndex);
+                                canvas.DrawText(segment, x + _leftIndent, lineY, paint);
+                                lineY += FontSize * LineHeight;
+                                startIndex = currentIndex;
+                                currentWidth = 0;
+                            }
+                            
+                            currentWidth += charWidth;
+                            currentIndex++;
+                        }
+                        
+                        // 绘制最后一行
+                        if (startIndex < line.Length)
+                        {
+                            string segment = line.Substring(startIndex);
+                            canvas.DrawText(segment, x + _leftIndent, lineY, paint);
+                            lineY += FontSize * LineHeight;
+                        }
                     }
-                }
-                
-                if (currentLine.Length > 0)
-                {
-                    canvas.DrawText(currentLine.ToString(), x + _leftIndent, lineY, paint);
-                    lineY += FontSize * LineHeight;
                 }
                 
                 return lineY + 10;

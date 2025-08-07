@@ -22,10 +22,35 @@ namespace Md2Image.ImageGeneration.Renderers
         }
         
         /// <summary>
+        /// 获取代码语言
+        /// </summary>
+        private string GetCodeLanguage(ref string code)
+        {
+            string language = "";
+            
+            // 检查第一行是否包含语言标识
+            int firstLineEnd = code.IndexOf('\n');
+            if (firstLineEnd > 0)
+            {
+                string firstLine = code.Substring(0, firstLineEnd).Trim();
+                if (firstLine.StartsWith("```"))
+                {
+                    language = firstLine.Substring(3).Trim();
+                    code = code.Substring(firstLineEnd + 1).Trim();
+                }
+            }
+            
+            return language;
+        }
+        
+        /// <summary>
         /// 渲染代码块
         /// </summary>
         public override float Render(SKCanvas canvas, string code, float x, float y, float width)
         {
+            // 提取代码语言（如果有）
+            string language = GetCodeLanguage(ref code);
+            
             // 绘制背景
             using (var bgPaint = new SKPaint
             {
@@ -37,6 +62,23 @@ namespace Md2Image.ImageGeneration.Renderers
                 canvas.DrawRect(bgRect, bgPaint);
             }
             
+            // 如果有语言标识，绘制语言标签
+            float currentY = y + FontSize + _padding;
+            if (!string.IsNullOrEmpty(language))
+            {
+                using (var langPaint = new SKPaint
+                {
+                    Color = new SKColor(100, 100, 100),
+                    TextSize = FontSize * 0.8f,
+                    IsAntialias = true,
+                    Typeface = SKTypeface.FromFamilyName(FontFamily)
+                })
+                {
+                    canvas.DrawText(language, x + _padding, currentY, langPaint);
+                    currentY += FontSize * LineHeight;
+                }
+            }
+            
             // 绘制代码文本
             using (var paint = new SKPaint
             {
@@ -46,9 +88,9 @@ namespace Md2Image.ImageGeneration.Renderers
                 Typeface = SKTypeface.FromFamilyName(FontFamily)
             })
             {
-                // 简化的文本换行绘制
+                // 处理代码行
                 var lines = code.Split('\n');
-                float lineY = y + FontSize + _padding;
+                float lineY = currentY;
                 
                 foreach (var line in lines)
                 {
@@ -60,34 +102,34 @@ namespace Md2Image.ImageGeneration.Renderers
                     else
                     {
                         // 需要换行的情况
-                        int charPos = 0;
-                        int lastPos = 0;
-                        float lineWidth = 0;
+                        int startIndex = 0;
+                        int currentIndex = 0;
+                        float currentWidth = 0;
                         
-                        while (charPos < line.Length)
+                        while (currentIndex < line.Length)
                         {
-                            char c = line[charPos];
+                            char c = line[currentIndex];
                             float charWidth = paint.MeasureText(c.ToString());
                             
-                            if (lineWidth + charWidth > width - _padding * 2)
+                            if (currentWidth + charWidth > width - _padding * 2)
                             {
                                 // 需要换行
-                                canvas.DrawText(line.Substring(lastPos, charPos - lastPos), x + _padding, lineY, paint);
-                                lastPos = charPos;
+                                string segment = line.Substring(startIndex, currentIndex - startIndex);
+                                canvas.DrawText(segment, x + _padding, lineY, paint);
                                 lineY += FontSize * LineHeight;
-                                lineWidth = 0;
+                                startIndex = currentIndex;
+                                currentWidth = 0;
                             }
-                            else
-                            {
-                                lineWidth += charWidth;
-                                charPos++;
-                            }
+                            
+                            currentWidth += charWidth;
+                            currentIndex++;
                         }
                         
                         // 绘制最后一行
-                        if (lastPos < line.Length)
+                        if (startIndex < line.Length)
                         {
-                            canvas.DrawText(line.Substring(lastPos), x + _padding, lineY, paint);
+                            string segment = line.Substring(startIndex);
+                            canvas.DrawText(segment, x + _padding, lineY, paint);
                         }
                     }
                     

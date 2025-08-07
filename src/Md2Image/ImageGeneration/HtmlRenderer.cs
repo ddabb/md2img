@@ -164,7 +164,7 @@ namespace Md2Image.ImageGeneration
                             break;
                         case "p":
                             // 检查是否是列表项
-                            if (content.StartsWith("• "))
+                            if (content.StartsWith("• ") || content.StartsWith("- "))
                             {
                                 elements.Add(new HtmlElement
                                 {
@@ -182,10 +182,28 @@ namespace Md2Image.ImageGeneration
                             }
                             break;
                         case "pre":
+                            // 处理代码块，保留语言标识
+                            string codeContent = content;
+                            
+                            // 检查是否有code标签
+                            var codeMatch = Regex.Match(content, @"<code[^>]*>(.*?)</code>", RegexOptions.Singleline);
+                            if (codeMatch.Success)
+                            {
+                                codeContent = codeMatch.Groups[1].Value;
+                                
+                                // 检查是否有语言类
+                                var classMatch = Regex.Match(codeMatch.Value, @"class=""language-([^""]+)""");
+                                if (classMatch.Success)
+                                {
+                                    string language = classMatch.Groups[1].Value;
+                                    codeContent = $"```{language}\n{codeContent}";
+                                }
+                            }
+                            
                             elements.Add(new HtmlElement
                             {
                                 Type = ElementType.CodeBlock,
-                                Content = StripHtmlTags(content)
+                                Content = StripHtmlTags(codeContent)
                             });
                             break;
                         case "blockquote":
