@@ -17,7 +17,7 @@ namespace Md2Image.Core
         /// 创建文本编码处理器实例
         /// </summary>
         /// <param name="encoding">指定编码，默认为UTF-8</param>
-        public TextEncodingHandler(Encoding encoding = null)
+        public TextEncodingHandler(Encoding? encoding = null)
         {
             // 确保.NET能够处理所有可能的编码
             try

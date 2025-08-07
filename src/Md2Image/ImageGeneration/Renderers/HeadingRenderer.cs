@@ -16,7 +16,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// </summary>
         /// <param name="level">标题级别</param>
         /// <param name="fontFamily">字体</param>
-        public HeadingRenderer(int level, string fontFamily = null) : base(fontFamily)
+        public HeadingRenderer(int level, string? fontFamily = null) : base(fontFamily)
         {
             _level = level;
             _fontSize = level == 1 ? 24 : 20;

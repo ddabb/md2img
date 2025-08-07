@@ -18,7 +18,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// <param name="fontSize">字体大小</param>
         /// <param name="lineHeight">行高</param>
         /// <param name="paragraphSpacing">段落间距</param>
-        public ParagraphRenderer(string fontFamily = null, float fontSize = 16, float lineHeight = 1.6f, float paragraphSpacing = 16) : base(fontFamily)
+        public ParagraphRenderer(string? fontFamily = null, float fontSize = 16, float lineHeight = 1.6f, float paragraphSpacing = 16) : base(fontFamily)
         {
             FontSize = fontSize;
             LineHeight = lineHeight;

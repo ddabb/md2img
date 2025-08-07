@@ -40,6 +40,9 @@ namespace Md2Image.ImageGeneration.Renderers
                 }
             }
             
+            // 处理HTML实体编码的代码
+            code = System.Net.WebUtility.HtmlDecode(code);
+            
             return language;
         }
         
@@ -51,6 +54,25 @@ namespace Md2Image.ImageGeneration.Renderers
             // 提取代码语言（如果有）
             string language = GetCodeLanguage(ref code);
             
+            // 确保代码中的注释符号正确显示
+            code = code.Replace("&lt;", "<")
+                       .Replace("&gt;", ">")
+                       .Replace("&amp;", "&")
+                       .Replace("&quot;", "\"")
+                       .Replace("&apos;", "'")
+                       .Replace("&nbsp;", " ")
+                       .Replace("&#x2F;", "/")
+                       .Replace("&#x27;", "'")
+                       .Replace("&#x2F;&#x2F;", "//")
+                       .Replace("&sol;&sol;", "//")
+                       .Replace("&sol;", "/");
+            
+            // 直接解码所有HTML实体
+            code = System.Net.WebUtility.HtmlDecode(code);
+            
+            // 确保注释符号正确显示
+            code = code.Replace("/ /", "//");
+            
             // 绘制背景
             using (var bgPaint = new SKPaint
             {
@@ -60,6 +82,19 @@ namespace Md2Image.ImageGeneration.Renderers
             {
                 var bgRect = new SKRect(x, y, x + width, y + MeasureTextHeight(code, width - _padding * 2, FontSize, LineHeight) + _padding * 2);
                 canvas.DrawRect(bgRect, bgPaint);
+            }
+            
+            // 绘制边框
+            using (var borderPaint = new SKPaint
+            {
+                Color = new SKColor(225, 228, 232),
+                IsAntialias = true,
+                IsStroke = true,
+                StrokeWidth = 1
+            })
+            {
+                var borderRect = new SKRect(x, y, x + width, y + MeasureTextHeight(code, width - _padding * 2, FontSize, LineHeight) + _padding * 2);
+                canvas.DrawRect(borderRect, borderPaint);
             }
             
             // 如果有语言标识，绘制语言标签
@@ -82,10 +117,12 @@ namespace Md2Image.ImageGeneration.Renderers
             // 绘制代码文本
             using (var paint = new SKPaint
             {
-                Color = SKColors.Black,
+                Color = new SKColor(36, 41, 46), // GitHub代码颜色
                 TextSize = FontSize,
                 IsAntialias = true,
-                Typeface = SKTypeface.FromFamilyName(FontFamily)
+                Typeface = SKTypeface.FromFamilyName(FontFamily),
+                SubpixelText = true, // 启用亚像素渲染，提高文本清晰度
+                FilterQuality = SKFilterQuality.High // 使用高质量过滤
             })
             {
                 // 处理代码行

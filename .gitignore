@@ -10,6 +10,8 @@ output/
 *.userosscache
 *.sln.docstates
 *.userprefs
+.vscode/
+*.code-workspace
 
 # 编译结果
 *.dll
@@ -25,21 +27,30 @@ packages/
 
 # MSTest 测试结果
 TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
 
 # .NET Core
 project.lock.json
 project.fragment.lock.json
 artifacts/
+.dotnet/
+*.dotnetcli.json
 
 # 临时文件
 *~
 *.swp
 *.tmp
 *.log
+*.bak
+*.backup
 
 # 操作系统文件
 .DS_Store
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
 # Node.js
 node_modules/
@@ -48,8 +59,19 @@ yarn-debug.log
 yarn-error.log
 package-lock.json
 yarn.lock
+.npm/
+
+# IDE 文件
+.idea/
+*.sln.iml
+.cr/
+*.ncrunch*
 
 # 其他
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+*.GhostDoc.xml
+.sass-cache/
+bower_components/
+.history/

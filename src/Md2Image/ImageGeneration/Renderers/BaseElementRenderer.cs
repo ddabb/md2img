@@ -29,7 +29,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// 构造函数
         /// </summary>
         /// <param name="fontFamily">字体</param>
-        public BaseElementRenderer(string fontFamily = null)
+        public BaseElementRenderer(string? fontFamily = null)
         {
             if (!string.IsNullOrEmpty(fontFamily))
             {

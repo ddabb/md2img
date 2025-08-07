@@ -22,7 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.30.4" />
     <PackageReference Include="Scriban" Version="5.5.2" />
-    <PackageReference Include="SkiaSharp" Version="2.88.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.7" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
   </ItemGroup>
 

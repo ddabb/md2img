@@ -36,7 +36,7 @@ namespace Md2Image.Core
         /// <summary>
         /// 自定义模板路径
         /// </summary>
-        public string CustomTemplatePath { get; set; }
+        public string? CustomTemplatePath { get; set; }
         
         /// <summary>
         /// 模板变量
@@ -51,12 +51,12 @@ namespace Md2Image.Core
         /// <summary>
         /// 水印文本
         /// </summary>
-        public string WatermarkText { get; set; }
+        public string? WatermarkText { get; set; }
         
         /// <summary>
         /// 水印图片路径
         /// </summary>
-        public string WatermarkImagePath { get; set; }
+        public string? WatermarkImagePath { get; set; }
         
         /// <summary>
         /// 水印透明度（0-1）
@@ -82,12 +82,12 @@ namespace Md2Image.Core
         /// <summary>
         /// 标题
         /// </summary>
-        public string Title { get; set; }
+        public string? Title { get; set; }
         
         /// <summary>
         /// 作者
         /// </summary>
-        public string Author { get; set; }
+        public string? Author { get; set; }
         
         /// <summary>
         /// 日期

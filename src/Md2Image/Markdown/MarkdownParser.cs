@@ -23,6 +23,19 @@ namespace Md2Image.Markdown
                 .UseAdvancedExtensions()
                 .UseEmojiAndSmiley()
                 .UseSoftlineBreakAsHardlineBreak()
+                .UsePipeTables()
+                .UseGridTables()
+                .UseListExtras()
+                .UseTaskLists()
+                .UseAutoLinks()
+                .UseGenericAttributes() // 允许使用通用属性
+                .UseAutoIdentifiers() // 自动为标题生成ID
+                .UseCustomContainers() // 支持自定义容器
+                .UseDefinitionLists() // 支持定义列表
+                .UseFootnotes() // 支持脚注
+                .UseCitations() // 支持引用
+                .UseBootstrap() // 使用Bootstrap样式
+                .UseMediaLinks() // 支持媒体链接
                 .Build();
         }
         

@@ -21,7 +21,7 @@ namespace Md2Image.Core
         /// 创建Markdown转换器实例
         /// </summary>
         /// <param name="templatesDirectory">自定义模板目录</param>
-        public MarkdownConverter(string templatesDirectory = null)
+        public MarkdownConverter(string? templatesDirectory = null)
         {
             _markdownParser = new MarkdownParser();
             _templateManager = new TemplateManager(templatesDirectory);
@@ -34,13 +34,13 @@ namespace Md2Image.Core
         /// <param name="markdownText">Markdown文本内容</param>
         /// <param name="options">转换选项</param>
         /// <returns>生成的图片数据列表</returns>
-        public async Task<IList<byte[]>> ConvertToImagesAsync(string markdownText, ConversionOptions options = null)
+        public async Task<IList<byte[]>> ConvertToImagesAsync(string markdownText, ConversionOptions? options = null)
         {
             options ??= new ConversionOptions();
             
             // 提取元数据
             var metadata = _markdownParser.ExtractMetadata(markdownText);
-            if (string.IsNullOrEmpty(options.Variables.Title) && metadata.TryGetValue("title", out string title))
+            if (string.IsNullOrEmpty(options.Variables.Title) && metadata.TryGetValue("title", out string? title))
             {
                 options.Variables.Title = title;
             }
@@ -61,7 +61,7 @@ namespace Md2Image.Core
         /// <param name="markdownFilePath">Markdown文件路径</param>
         /// <param name="options">转换选项</param>
         /// <returns>生成的图片数据列表</returns>
-        public async Task<IList<byte[]>> ConvertFileToImagesAsync(string markdownFilePath, ConversionOptions options = null)
+        public async Task<IList<byte[]>> ConvertFileToImagesAsync(string markdownFilePath, ConversionOptions? options = null)
         {
             if (!File.Exists(markdownFilePath))
             {
@@ -89,13 +89,13 @@ namespace Md2Image.Core
         /// <param name="fileNamePrefix">文件名前缀</param>
         /// <param name="options">转换选项</param>
         /// <returns>生成的图片文件路径列表</returns>
-        public async Task<IList<string>> ConvertAndSaveAsync(string markdownText, string outputDirectory, string fileNamePrefix, ConversionOptions options = null)
+        public async Task<IList<string>> ConvertAndSaveAsync(string markdownText, string outputDirectory, string fileNamePrefix, ConversionOptions? options = null)
         {
             options ??= new ConversionOptions();
             
             // 提取元数据
             var metadata = _markdownParser.ExtractMetadata(markdownText);
-            if (string.IsNullOrEmpty(options.Variables.Title) && metadata.TryGetValue("title", out string title))
+            if (string.IsNullOrEmpty(options.Variables.Title) && metadata.TryGetValue("title", out string? title))
             {
                 options.Variables.Title = title;
             }
@@ -118,7 +118,7 @@ namespace Md2Image.Core
         /// <param name="fileNamePrefix">文件名前缀，如果为null则使用原文件名</param>
         /// <param name="options">转换选项</param>
         /// <returns>生成的图片文件路径列表</returns>
-        public async Task<IList<string>> ConvertFileAndSaveAsync(string markdownFilePath, string outputDirectory, string fileNamePrefix = null, ConversionOptions options = null)
+        public async Task<IList<string>> ConvertFileAndSaveAsync(string markdownFilePath, string outputDirectory, string? fileNamePrefix = null, ConversionOptions? options = null)
         {
             if (!File.Exists(markdownFilePath))
             {

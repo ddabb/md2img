@@ -19,7 +19,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// 构造函数
         /// </summary>
         /// <param name="fontFamily">字体</param>
-        public TableRenderer(string fontFamily = null) : base(fontFamily)
+        public TableRenderer(string? fontFamily = null) : base(fontFamily)
         {
             FontSize = 14;
             LineHeight = 1.2f;

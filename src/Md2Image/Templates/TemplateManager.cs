@@ -20,7 +20,7 @@ namespace Md2Image.Templates
         /// 创建模板管理器实例
         /// </summary>
         /// <param name="templatesDirectory">模板目录路径</param>
-        public TemplateManager(string templatesDirectory = null)
+        public TemplateManager(string? templatesDirectory = null)
         {
             _templatesDirectory = templatesDirectory ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates");
         }
@@ -76,7 +76,15 @@ namespace Md2Image.Templates
                 }
                 
                 // 从缓存中获取模板，如果不存在则加载
-                if (!_templateCache.TryGetValue(templatePath, out templateContent))
+                if (!_templateCache.TryGetValue(templatePath, out string? tempContent))
+                {
+                    templateContent = await File.ReadAllTextAsync(templatePath);
+                    _templateCache[templatePath] = templateContent;
+                }
+                else
+                {
+                    templateContent = tempContent ?? string.Empty;
+                }
                 {
                     templateContent = await File.ReadAllTextAsync(templatePath);
                     _templateCache[templatePath] = templateContent;

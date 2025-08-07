@@ -23,7 +23,7 @@ namespace Md2Image.ImageGeneration
         /// 构造函数
         /// </summary>
         /// <param name="encodingHandler">编码处理器</param>
-        public EncodingAwareHtmlRenderer(TextEncodingHandler encodingHandler = null)
+        public EncodingAwareHtmlRenderer(TextEncodingHandler? encodingHandler = null)
         {
             _encodingHandler = encodingHandler ?? new TextEncodingHandler();
         }
@@ -115,10 +115,27 @@ namespace Md2Image.ImageGeneration
                                 }
                             }
                             
+                            // 处理HTML实体，特别是代码中的注释符号
+                            codeContent = codeContent
+                                .Replace("&lt;", "<")
+                                .Replace("&gt;", ">")
+                                .Replace("&amp;", "&")
+                                .Replace("&quot;", "\"")
+                                .Replace("&apos;", "'")
+                                .Replace("&nbsp;", " ")
+                                .Replace("&#x2F;", "/")
+                                .Replace("&#x27;", "'")
+                                .Replace("&#x2F;&#x2F;", "//") // 特别处理注释符号
+                                .Replace("&sol;&sol;", "//")
+                                .Replace("&sol;", "/");
+                                
+                            // 直接解码所有HTML实体
+                            codeContent = System.Net.WebUtility.HtmlDecode(codeContent);
+                            
                             elements.Add(new HtmlElement
                             {
                                 Type = ElementType.CodeBlock,
-                                Content = StripHtmlTags(codeContent)
+                                Content = codeContent
                             });
                             break;
                         case "blockquote":

@@ -93,7 +93,7 @@ namespace Md2Image.ImageGeneration
         /// <param name="htmlContent">HTML内容</param>
         /// <param name="options">转换选项</param>
         /// <returns>渲染后的位图列表</returns>
-        public virtual async Task<IList<SKBitmap>> RenderHtmlAsync(string htmlContent, ConversionOptions options)
+        public virtual Task<IList<SKBitmap>> RenderHtmlAsync(string htmlContent, ConversionOptions options)
         {
             // 解析HTML内容
             var htmlElements = ParseHtmlSequentially(htmlContent);
@@ -113,7 +113,7 @@ namespace Md2Image.ImageGeneration
             }
             
             // 分页处理
-            return SplitIntoPages(bitmap, options.MaxHeight);
+            return Task.FromResult<IList<SKBitmap>>(SplitIntoPages(bitmap, options.MaxHeight));
         }
         
         /// <summary>
@@ -200,10 +200,27 @@ namespace Md2Image.ImageGeneration
                                 }
                             }
                             
+                            // 处理HTML实体，特别是代码中的注释符号
+                            codeContent = codeContent
+                                .Replace("&lt;", "<")
+                                .Replace("&gt;", ">")
+                                .Replace("&amp;", "&")
+                                .Replace("&quot;", "\"")
+                                .Replace("&apos;", "'")
+                                .Replace("&nbsp;", " ")
+                                .Replace("&#x2F;", "/")
+                                .Replace("&#x27;", "'")
+                                .Replace("&#x2F;&#x2F;", "//") // 特别处理注释符号
+                                .Replace("&sol;&sol;", "//")
+                                .Replace("&sol;", "/");
+                                
+                            // 直接解码所有HTML实体
+                            codeContent = System.Net.WebUtility.HtmlDecode(codeContent);
+                            
                             elements.Add(new HtmlElement
                             {
                                 Type = ElementType.CodeBlock,
-                                Content = StripHtmlTags(codeContent)
+                                Content = codeContent
                             });
                             break;
                         case "blockquote":
@@ -337,7 +354,7 @@ namespace Md2Image.ImageGeneration
             {
                 if (_renderers.TryGetValue(element.Type, out var renderer))
                 {
-                    totalHeight += renderer.MeasureHeight(element.Content, width - _defaultMargin * 2);
+                    totalHeight += renderer.MeasureHeight(element.Content ?? string.Empty, width - _defaultMargin * 2);
                 }
             }
             
@@ -355,7 +372,7 @@ namespace Md2Image.ImageGeneration
             {
                 if (_renderers.TryGetValue(element.Type, out var renderer))
                 {
-                    y = renderer.Render(canvas, element.Content, _defaultMargin, y, width - _defaultMargin * 2);
+                    y = renderer.Render(canvas, element.Content ?? string.Empty, _defaultMargin, y, width - _defaultMargin * 2);
                 }
             }
         }

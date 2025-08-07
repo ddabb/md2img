@@ -13,7 +13,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// 构造函数
         /// </summary>
         /// <param name="fontFamily">字体</param>
-        public ImageRenderer(string fontFamily = null) : base(fontFamily)
+        public ImageRenderer(string? fontFamily = null) : base(fontFamily)
         {
         }
         
@@ -25,7 +25,7 @@ namespace Md2Image.ImageGeneration.Renderers
             try
             {
                 // 尝试加载图片
-                SKBitmap imageBitmap = null;
+                SKBitmap? imageBitmap = null;
                 
                 if (src.StartsWith("http://") || src.StartsWith("https://"))
                 {

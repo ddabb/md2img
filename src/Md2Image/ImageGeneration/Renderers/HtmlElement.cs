@@ -13,6 +13,6 @@ namespace Md2Image.ImageGeneration.Renderers
         /// <summary>
         /// 元素内容
         /// </summary>
-        public string Content { get; set; }
+        public string? Content { get; set; } = string.Empty;
     }
 }
