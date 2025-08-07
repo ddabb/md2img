@@ -25,6 +25,18 @@ namespace Md2Image.ImageGeneration.Renderers
         /// </summary>
         public override float Render(SKCanvas canvas, string text, float x, float y, float width)
         {
+            // 首先计算文本的高度和位置
+            float textHeight = MeasureTextHeight(text, width - _leftIndent, FontSize, LineHeight);
+            float textStartY = y + FontSize + 2; // 文本起始位置
+            
+            // 计算实际文本结束位置（考虑到最后一行的高度）
+            float actualTextEndY = textStartY + textHeight;
+            
+            // 计算背景区域，减小背景阴影区域的大小
+            float bgPaddingTop = 2; // 减小顶部padding
+            float bgPaddingBottom = 5; // 减小底部padding
+            var bgRect = new SKRect(x, y - bgPaddingTop, x + width, actualTextEndY + bgPaddingBottom);
+            
             // 绘制背景
             using (var bgPaint = new SKPaint
             {
@@ -32,20 +44,20 @@ namespace Md2Image.ImageGeneration.Renderers
                 IsAntialias = true
             })
             {
-                float textHeight = MeasureTextHeight(text, width - _leftIndent, FontSize, LineHeight);
-                var bgRect = new SKRect(x, y - 5, x + width, y + textHeight + 5);
                 canvas.DrawRect(bgRect, bgPaint);
             }
             
             // 绘制左侧竖线
             using (var linePaint = new SKPaint
             {
-                Color = new SKColor(80, 80, 80), // 更深的灰色竖线
-                StrokeWidth = 5
+                Color = new SKColor(120, 120, 120), // 使用更浅的灰色
+                StrokeWidth = 4 // 稍微减小线宽
             })
             {
-                float textHeight = MeasureTextHeight(text, width - _leftIndent, FontSize, LineHeight);
-                canvas.DrawLine(x + 4, y - 5, x + 4, y + textHeight + 5, linePaint);
+                // 竖线高度应该与文本的高度更接近
+                float lineTop = textStartY - FontSize * 0.5f; // 文本起始位置上方一点
+                float lineBottom = textStartY + textHeight - FontSize * 0.5f; // 文本结束位置
+                canvas.DrawLine(x + 4, lineTop, x + 4, lineBottom, linePaint);
             }
             
             // 绘制文本
@@ -57,9 +69,9 @@ namespace Md2Image.ImageGeneration.Renderers
                 Typeface = SKTypeface.FromFamilyName(FontFamily)
             })
             {
-            // 处理中文和英文混合文本
-            var lines = text.Split('\n');
-            float lineY = y + FontSize + 2; // 减少顶部间距
+                // 处理中文和英文混合文本
+                var lines = text.Split('\n');
+                float lineY = textStartY; // 使用计算好的文本起始位置
             
             foreach (var line in lines)
             {
@@ -70,7 +82,8 @@ namespace Md2Image.ImageGeneration.Renderers
                 }
                 
                 // 处理长行
-                if (paint.MeasureText(line) <= width - _leftIndent)
+                float availableWidth = width - _leftIndent;
+                if (paint.MeasureText(line) <= availableWidth)
                 {
                     canvas.DrawText(line, x + _leftIndent, lineY, paint);
                     lineY += FontSize * LineHeight;
@@ -81,22 +94,36 @@ namespace Md2Image.ImageGeneration.Renderers
                     int startIndex = 0;
                     int currentIndex = 0;
                     float currentWidth = 0;
+                    StringBuilder currentLine = new StringBuilder();
                     
                     while (currentIndex < line.Length)
                     {
                         char c = line[currentIndex];
                         float charWidth = paint.MeasureText(c.ToString());
                         
-                        if (currentWidth + charWidth > width - _leftIndent)
+                        // 检查添加这个字符是否会超出可用宽度
+                        if (currentWidth + charWidth > availableWidth)
                         {
+                            // 如果当前行为空（说明单个字符就超出了宽度），至少添加一个字符
+                            if (currentLine.Length == 0)
+                            {
+                                currentLine.Append(c);
+                                currentIndex++;
+                            }
+                            
                             // 需要换行
-                            string segment = line.Substring(startIndex, currentIndex - startIndex);
+                            string segment = currentLine.ToString();
                             canvas.DrawText(segment, x + _leftIndent, lineY, paint);
                             lineY += FontSize * LineHeight;
-                            startIndex = currentIndex;
+                            
+                            // 重置当前行
+                            currentLine.Clear();
                             currentWidth = 0;
+                            continue;
                         }
                         
+                        // 添加字符到当前行
+                        currentLine.Append(c);
                         currentWidth += charWidth;
                         currentIndex++;
                     }
@@ -121,7 +148,7 @@ namespace Md2Image.ImageGeneration.Renderers
         public override float MeasureHeight(string content, float width)
         {
             float textHeight = MeasureTextHeight(content, width - _leftIndent, FontSize, LineHeight);
-            return textHeight + 10; // 减少额外的空间，使引用块更紧凑
+            return textHeight; 
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Md2Image.ImageGeneration.Renderers
         /// 构造函数
         /// </summary>
         /// <param name="fontFamily">字体</param>
-        public CodeBlockRenderer(string fontFamily = "Consolas, monospace") : base(fontFamily)
+        public CodeBlockRenderer(string fontFamily = "Microsoft YaHei, Consolas, monospace") : base(fontFamily)
         {
             FontSize = 14;
             LineHeight = 1.5f;
@@ -73,6 +73,78 @@ namespace Md2Image.ImageGeneration.Renderers
             // 确保注释符号正确显示
             code = code.Replace("/ /", "//");
             
+            // 确保正确处理中文字符
+            try
+            {
+                // 确保已注册编码提供程序
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                
+                // 使用UTF-8编码处理代码内容
+                code = System.Text.Encoding.UTF8.GetString(
+                    System.Text.Encoding.UTF8.GetBytes(code)
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"处理代码块编码时出错: {ex.Message}");
+            }
+            
+            // 分割代码行
+            var codeLines = code.Split('\n');
+            
+            // 创建画笔用于测量文本
+            using var measurePaint = new SKPaint
+            {
+                TextSize = FontSize,
+                Typeface = SKTypeface.FromFamilyName(FontFamily)
+            };
+            
+            // 计算语言标签高度
+            float languageHeight = !string.IsNullOrEmpty(language) ? FontSize * LineHeight : 0;
+            
+            // 计算每行代码的实际高度（考虑换行）
+            float totalCodeHeight = 0;
+            foreach (var line in codeLines)
+            {
+                if (measurePaint.MeasureText(line) <= width - _padding * 2)
+                {
+                    // 单行
+                    totalCodeHeight += FontSize * LineHeight;
+                }
+                else
+                {
+                    // 需要换行的情况，计算实际行数
+                    float lineWidth = 0;
+                    int wrappedLines = 1;
+                    
+                    foreach (char c in line)
+                    {
+                        float charWidth = measurePaint.MeasureText(c.ToString());
+                        if (lineWidth + charWidth > width - _padding * 2)
+                        {
+                            wrappedLines++;
+                            lineWidth = charWidth;
+                        }
+                        else
+                        {
+                            lineWidth += charWidth;
+                        }
+                    }
+                    
+                    totalCodeHeight += wrappedLines * FontSize * LineHeight;
+                }
+            }
+            
+            // 设置内边距
+            float bgPaddingTop = 10;
+            float bgPaddingBottom = 20; // 增加底部内边距，确保内容完整显示
+            
+            // 计算总高度
+            float totalHeight = languageHeight + totalCodeHeight + bgPaddingTop + bgPaddingBottom;
+            
+            // 计算背景矩形
+            var bgRect = new SKRect(x, y, x + width, y + totalHeight);
+            
             // 绘制背景
             using (var bgPaint = new SKPaint
             {
@@ -80,7 +152,6 @@ namespace Md2Image.ImageGeneration.Renderers
                 IsAntialias = true
             })
             {
-                var bgRect = new SKRect(x, y, x + width, y + MeasureTextHeight(code, width - _padding * 2, FontSize, LineHeight) + _padding * 2);
                 canvas.DrawRect(bgRect, bgPaint);
             }
             
@@ -93,12 +164,13 @@ namespace Md2Image.ImageGeneration.Renderers
                 StrokeWidth = 1
             })
             {
-                var borderRect = new SKRect(x, y, x + width, y + MeasureTextHeight(code, width - _padding * 2, FontSize, LineHeight) + _padding * 2);
-                canvas.DrawRect(borderRect, borderPaint);
+                canvas.DrawRect(bgRect, borderPaint);
             }
             
+            // 计算文本起始位置
+            float currentY = y + bgPaddingTop + FontSize; // 从顶部内边距开始，加上字体大小（基线位置）
+            
             // 如果有语言标识，绘制语言标签
-            float currentY = y + FontSize + _padding;
             if (!string.IsNullOrEmpty(language))
             {
                 using (var langPaint = new SKPaint
@@ -125,56 +197,67 @@ namespace Md2Image.ImageGeneration.Renderers
                 FilterQuality = SKFilterQuality.High // 使用高质量过滤
             })
             {
-                // 处理代码行
-                var lines = code.Split('\n');
-                float lineY = currentY;
-                
-                foreach (var line in lines)
+                foreach (var line in codeLines)
                 {
                     // 处理长行
-                    if (paint.MeasureText(line) <= width - _padding * 2)
+                    float availableWidth = width - _padding * 2;
+                    if (paint.MeasureText(line) <= availableWidth)
                     {
-                        canvas.DrawText(line, x + _padding, lineY, paint);
+                        canvas.DrawText(line, x + _padding, currentY, paint);
+                        currentY += FontSize * LineHeight;
                     }
                     else
                     {
                         // 需要换行的情况
-                        int startIndex = 0;
                         int currentIndex = 0;
                         float currentWidth = 0;
+                        System.Text.StringBuilder currentLine = new System.Text.StringBuilder();
                         
                         while (currentIndex < line.Length)
                         {
                             char c = line[currentIndex];
                             float charWidth = paint.MeasureText(c.ToString());
                             
-                            if (currentWidth + charWidth > width - _padding * 2)
+                            // 检查添加这个字符是否会超出可用宽度
+                            if (currentWidth + charWidth > availableWidth)
                             {
+                                // 如果当前行为空（说明单个字符就超出了宽度），至少添加一个字符
+                                if (currentLine.Length == 0)
+                                {
+                                    currentLine.Append(c);
+                                    currentIndex++;
+                                }
+                                
                                 // 需要换行
-                                string segment = line.Substring(startIndex, currentIndex - startIndex);
-                                canvas.DrawText(segment, x + _padding, lineY, paint);
-                                lineY += FontSize * LineHeight;
-                                startIndex = currentIndex;
+                                string segment = currentLine.ToString();
+                                canvas.DrawText(segment, x + _padding, currentY, paint);
+                                currentY += FontSize * LineHeight;
+                                
+                                // 重置当前行
+                                currentLine.Clear();
                                 currentWidth = 0;
+                                continue;
                             }
                             
+                            // 添加字符到当前行
+                            currentLine.Append(c);
                             currentWidth += charWidth;
                             currentIndex++;
                         }
                         
                         // 绘制最后一行
-                        if (startIndex < line.Length)
+                        if (currentLine.Length > 0)
                         {
-                            string segment = line.Substring(startIndex);
-                            canvas.DrawText(segment, x + _padding, lineY, paint);
+                            string segment = currentLine.ToString();
+                            canvas.DrawText(segment, x + _padding, currentY, paint);
+                            currentY += FontSize * LineHeight;
                         }
                     }
-                    
-                    lineY += FontSize * LineHeight;
                 }
-                
-                return lineY + _padding;
             }
+            
+            // 返回实际高度
+            return y + totalHeight;
         }
         
         /// <summary>
@@ -182,8 +265,62 @@ namespace Md2Image.ImageGeneration.Renderers
         /// </summary>
         public override float MeasureHeight(string content, float width)
         {
-            float textHeight = MeasureTextHeight(content, width - _padding * 2, FontSize, LineHeight);
-            return textHeight + _padding * 2;
+            // 提取代码语言（如果有）
+            string tempContent = content;
+            string language = GetCodeLanguage(ref tempContent);
+            
+            // 计算语言标签高度
+            float languageHeight = !string.IsNullOrEmpty(language) ? FontSize * LineHeight : 0;
+            
+            // 分割代码行
+            var codeLines = tempContent.Split('\n');
+            
+            // 创建画笔用于测量文本
+            using var measurePaint = new SKPaint
+            {
+                TextSize = FontSize,
+                Typeface = SKTypeface.FromFamilyName(FontFamily)
+            };
+            
+            // 计算每行代码的实际高度（考虑换行）
+            float totalCodeHeight = 0;
+            foreach (var line in codeLines)
+            {
+                if (measurePaint.MeasureText(line) <= width - _padding * 2)
+                {
+                    // 单行
+                    totalCodeHeight += FontSize * LineHeight;
+                }
+                else
+                {
+                    // 需要换行的情况，计算实际行数
+                    float lineWidth = 0;
+                    int wrappedLines = 1;
+                    
+                    foreach (char c in line)
+                    {
+                        float charWidth = measurePaint.MeasureText(c.ToString());
+                        if (lineWidth + charWidth > width - _padding * 2)
+                        {
+                            wrappedLines++;
+                            lineWidth = charWidth;
+                        }
+                        else
+                        {
+                            lineWidth += charWidth;
+                        }
+                    }
+                    
+                    totalCodeHeight += wrappedLines * FontSize * LineHeight;
+                }
+            }
+            
+            // 设置内边距
+            float bgPaddingTop = 10;
+            float bgPaddingBottom = 20;
+            
+            // 返回总高度
+            return languageHeight + totalCodeHeight + bgPaddingTop + bgPaddingBottom;
         }
     }
 }

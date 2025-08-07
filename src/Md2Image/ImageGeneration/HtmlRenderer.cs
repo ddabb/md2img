@@ -41,7 +41,7 @@ namespace Md2Image.ImageGeneration
                 { ElementType.Heading2, new HeadingRenderer(2, _defaultFontFamily) },
                 { ElementType.Paragraph, new ParagraphRenderer(_defaultFontFamily) },
                 { ElementType.Image, new ImageRenderer() },
-                { ElementType.CodeBlock, new CodeBlockRenderer() },
+                { ElementType.CodeBlock, new CodeBlockRenderer(_defaultFontFamily) },
                 { ElementType.Blockquote, new BlockquoteRenderer(_defaultFontFamily) },
                 { ElementType.Table, new TableRenderer(_defaultFontFamily) },
                 { ElementType.ListItem, new ParagraphRenderer(_defaultFontFamily) }
@@ -383,6 +383,13 @@ namespace Md2Image.ImageGeneration
         private IList<SKBitmap> SplitIntoPages(SKBitmap bitmap, int maxHeight)
         {
             var result = new List<SKBitmap>();
+            
+            // 如果图片高度小于最大高度，直接返回原图
+            if (bitmap.Height <= maxHeight)
+            {
+                result.Add(bitmap);
+                return result;
+            }
             
             int pageCount = Math.Max(1, bitmap.Height / maxHeight + (bitmap.Height % maxHeight > 0 ? 1 : 0));
             for (int i = 0; i < pageCount; i++)

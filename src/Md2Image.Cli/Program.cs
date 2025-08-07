@@ -27,7 +27,7 @@ namespace Md2Image.Cli
             string template = "default";
             string customTemplatePath = null;
             int width = 800;
-            int maxHeight = 1200;
+            int maxHeight = 5000; // 增加最大高度，确保长内容能够完整显示
             string format = "png";
             int quality = 90;
             string title = null;
